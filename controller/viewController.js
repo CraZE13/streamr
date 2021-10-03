@@ -1,5 +1,6 @@
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
+const StreamrClient = require('streamr-client')
 
 exports.renderHomePage = catchAsync(async(req,res,next)=>{
     if(!req.cookies.jwt){
@@ -18,14 +19,6 @@ exports.renderSignupPage = catchAsync(async(req,res,next)=>{
     res.status(200).render('signup')
 })
 
-exports.renderTandC = catchAsync(async(req,res,next)=>{
-    res.status(200).render('tandc')
-})
-
-exports.renderPP = catchAsync(async(req,res,next)=>{
-    res.status(200).render('pp')
-})
-
 exports.renderUploadPage = catchAsync(async(req,res,next)=>{
     if(!req.cookies.jwt){
         res.status(200).render('login')
@@ -40,6 +33,14 @@ exports.renderTrackPage = catchAsync(async(req,res,next)=>{
         res.status(200).render('login')
     } else{
         res.status(200).render('track')
+    }
+
+})
+exports.renderTCPage = catchAsync(async(req,res,next)=>{
+    if(!req.cookies.jwt){
+        res.status(200).render('TC')
+    } else{
+        res.status(200).render('TC')
     }
 
 })

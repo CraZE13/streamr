@@ -8,7 +8,5 @@ router.get('/login',viewController.renderLoginPage)
 router.get('/signup',viewController.renderSignupPage)
 router.get('/upload',viewController.renderUploadPage)
 router.get('/track',viewController.renderTrackPage)
-router.get('/tandc',viewController.renderTandC)
-router.get('/pp',viewController.renderPP)
-
+router.get('/TC',viewController.renderTCPage)
 module.exports = router;
