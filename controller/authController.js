@@ -1,9 +1,15 @@
 const jwt = require("jsonwebtoken");
+const StreamrClient = require('streamr-client')
 const { promisify } = require("util");
 const User = require("../models/userModel");
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
 const { json } = require("body-parser");
+const DataCoins = require('../models/userDataCoinsModel');
+
+const uploadDataCoinsStats = catchAsync(async(userID, stats)=>{
+  const dataCoinStats = await DataCoins.findOneAndUpdate(userID,stats)
+})
 
 const sendToken = (id, res) => {
   const token = jwt.sign(
@@ -33,14 +39,48 @@ exports.signUp = catchAsync(async (req, res, next) => {
 
   const token = sendToken(newUser._id, res);
 
+  const userWallet = StreamrClient.generateEthereumAccount()
+  console.log(userWallet)
+
+  const streamr = new StreamrClient({
+    auth:{
+        privateKey: userWallet.privateKey
+    },
+    url: 'wss://hack.streamr.network/api/v1/ws',
+    restUrl: 'https://hack.streamr.network/api/v1',        
+  })
+  // console.log(streamr)
+
+  streamr.joinDataUnion(process.env.DU_CONTRACT, process.env.SHARED_SECRET)
+  .then((memberDetails)=>{
+      console.log(memberDetails)
+
+      streamr.getMemberStats(process.env.DU_CONTRACT, userWallet.address)
+          .then((stats) => {
+              console.log(stats);
+              uploadDataCoinsStats(newUser._id,stats)
+          })
+          .catch((err) => {
+              console.log(err.message);
+          })
+  })
+  .catch((err)=>{
+      console.log(err)
+  })
+  .finally(()=>{
+      streamr.publish(process.env.STREAM_ID_USER, { 
+          user:newUser
+      })
+      console.log("Data Published");
+  })
+
+  res.redirect("/");
   // res.status(201).json({
   //   status: "success",
   //   message: "Signed-in successfully",
   //   token,
   //   user: newUser,
   // });
-
-  res.redirect("/");
 
   next();
 });
@@ -102,7 +142,7 @@ exports.protect = catchAsync(async (req, res, next) => {
     req.headers.authorization.startsWith("Bearer")
   ) {
     token = req.headers.authorization.split(" ")[1];
-  }
+  } 
   else if (req.cookies.jwt) {
     token = req.cookies.jwt;
   }
@@ -134,3 +174,42 @@ exports.protect = catchAsync(async (req, res, next) => {
 
   next();
 });
+
+exports.addFitnessRecords = catchAsync(async (req, res, next) => {
+  // console.log(req.body)
+  const userWallet = StreamrClient.generateEthereumAccount()
+  console.log(userWallet)
+
+  const streamr = new StreamrClient({
+    auth:{
+        privateKey: userWallet.privateKey
+    },
+    url: 'wss://hack.streamr.network/api/v1/ws',
+    restUrl: 'https://hack.streamr.network/api/v1',        
+  })
+  // console.log(streamr)
+
+  streamr.joinDataUnion(process.env.DU_CONTRACT, process.env.SHARED_SECRET)
+  .then((memberDetails)=>{
+      console.log(memberDetails)
+
+      streamr.getMemberStats(process.env.DU_CONTRACT, userWallet.address)
+          .then((stats) => {
+              console.log(stats);
+              uploadDataCoinsStats(req.user._id,stats)
+          })
+          .catch((err) => {
+              console.log(err.message);
+          })
+  })
+  .catch((err)=>{
+      console.log(err)
+  })
+  .finally(()=>{
+      streamr.publish(process.env.STREAM_ID_FITNESS, { 
+          user:req.user._id,
+          data:req.body
+      })
+      console.log("Data Published");
+  })
+})

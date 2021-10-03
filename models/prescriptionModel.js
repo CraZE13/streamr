@@ -14,6 +14,14 @@ const prescriptionSchema = new mongoose.Schema({
   name:{
       type:String,
       required:[true,'Uploaded file must have a name']
+  },
+  path:{
+      type:String,
+      required:[true,'Uploaded file must have a name'],
+  },
+  description:{
+      type:String,
+      required:false
   }
 })
 

@@ -20,10 +20,6 @@ const userSchema = new mongoose.Schema({
         minlength:8,
         select:false
     },
-    permission:{
-        type:Boolean,
-        default: false,
-    }
     // confirmPassword:{
     //     type:String,
     //     required:[true,'Please confirm your password'],
